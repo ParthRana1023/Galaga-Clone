@@ -6,6 +6,9 @@ import math
 #Initialize
 pygame.init()
 
+clock = pygame.time.Clock()
+FPS = 60
+
 #Create Game Screen
 screen = pygame.display.set_mode((800, 600))
 
@@ -16,6 +19,8 @@ icon = pygame.image.load("./images/icon.png")
 pygame.display.set_icon(icon)
 
 bg = pygame.image.load('./images/bg_img.png')
+bg_y1 = 0
+bg_y2 = bg.get_height()
 
 mixer.music.load('./audio/backgroundMusic.mp3')
 mixer.music.play(-1)
@@ -24,29 +29,29 @@ mixer.music.play(-1)
 playerImg = pygame.image.load('./images/ship.png')
 playerX = 368
 playerY = 480
-playerX_change = 0
-playerY_change = 0
+playerXChange = 0
+playerYChange = 0
 
 #Enemy
 enemyImg = []
 enemyX = []
 enemyY = [] 
-no_enemies = 5
+no_enemies = 1
 
-for i in  range(no_enemies):
+for i in range(no_enemies):
     enemyImg.append(pygame.image.load('./images/enemy.png'))
     enemyX.append(random.randint(0, 736))
-    enemyY.append(random.randint(0, 100))
+    enemyY.append(random.randint(0, 50))
 
-enemyX_change = 0.5
-enemyY_change = 0.5
+enemyXChange = 2
+enemyYChange = 2
 
 #Laser
 laserImg = pygame.image.load('./images/laser.png')
 laserX = 0
 laserY = 480
-laserX_change = 0
-laserY_change = 7.5
+laserXChange = 0
+laserYChange = 10
 laserState = "ready"
 
 #Score
@@ -56,12 +61,13 @@ textX = 25
 textY = 25
 
 gameOverFont = pygame.font.Font('./font/scoreFont.ttf', 60)
+resetGameFont = pygame.font.Font('./font/scoreFont.ttf', 20)
 
 def player(x, y):
     screen.blit(playerImg, (x, y))
 
 def enemy(x, y, i):
-    for i in range (no_enemies):
+    if i < len(enemyImg):
         screen.blit(enemyImg[i], (x, y))
 
 def laserFire(x, y):
@@ -70,8 +76,17 @@ def laserFire(x, y):
     screen.blit(laserImg, (x, y))
 
 def isCollision(enemyX, enemyY, laserX, laserY):
-    dist = math.sqrt(math.pow((laserX - enemyX), 2) + math.pow((laserY - enemyY), 2))
-    if  dist < 36:
+    enemyDestroyed = math.sqrt(math.pow((laserX - enemyX), 2) + math.pow((laserY - enemyY), 2))
+    
+    if  enemyDestroyed < 36:
+        return True
+    else:
+        return False
+
+def shipContact(enemyX, enemyY, playerX, playerY):
+    shipDestroy = math.sqrt(math.pow((playerX - enemyX), 2) + math.pow((playerY - enemyY), 2))
+
+    if shipDestroy <= 36:
         return True
     else:
         return False
@@ -80,24 +95,55 @@ def scoreDisplay(x, y):
     score = font.render("Score:" +  str(enemiesKilled*100), True, (255, 255, 255))
     screen.blit(score, (x , y))
 
-
 def gameOver():
+    global gameOverB
+    gameOverB = True
     over = gameOverFont.render("Game Over", True, (255, 255, 255))
+    resetGame = resetGameFont.render("Press SPACE to reset game.", True, (255, 255, 255))
     screen.blit(over, (125, 270))
+    screen.blit(resetGame, (155, 350))
 
-#Level Start Sound
+def resetGame():
+    global playerX, playerY, laserY, laserState, enemiesKilled, gameOverB, gameOverSound, no_enemies
+    playerX = 368
+    playerY = 480
+    laserY = 480
+    gameOverB = False
+    gameOverSound = True
+    laserState = "ready"
+    enemiesKilled = 0
+    no_enemies = 1  # Increment the number of enemies
+    enemyImg.clear()
+    enemyX.clear()
+    enemyY.clear()
+    for i in range(no_enemies):
+        enemyImg.append(pygame.image.load('./images/enemy.png'))
+        enemyX.append(random.randint(0, 736))
+        enemyY.append(random.randint(0, 100))
+
+
+
+#Level Start/End Sound
 levelStart = mixer.Sound('./audio/levelStart.mp3')
 levelStart.play()
+levelOver = mixer.Sound('./audio/gameOver.mp3')
+gameOverSound = True
 
 #Window Loop
 running = True
 while running:
 
-    #Screen colour
-    screen.fill((0, 0, 0))
-
+    clock.tick(FPS)
+    
     #Background Image
-    screen.blit(bg, (0, 0))
+    screen.blit(bg, (0, bg_y1))
+    screen.blit(bg, (0, bg_y2))
+    bg_y1 += 2
+    bg_y2 += 2
+    if bg_y1 >= bg.get_height():
+        bg_y1 = -bg.get_height()
+    if bg_y2 >= bg.get_height():
+        bg_y2 = -bg.get_height()
 
     for event in pygame.event.get():
 
@@ -105,31 +151,36 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    #Keyboard Control
+        #Keyboard Control
         keypress = True
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
-                playerX_change = -1
-            if  event.key == pygame.K_RIGHT:
-                playerX_change = 1
-            if  event.key == pygame.K_UP:
-                playerY_change = -1
-            if   event.key == pygame.K_DOWN:
-                playerY_change = 1
+            if event.key == pygame.K_a:
+                playerXChange = -3
+            if  event.key == pygame.K_d:
+                playerXChange = 3
+            if  event.key == pygame.K_w:
+                playerYChange = -3
+            if   event.key == pygame.K_s:
+                playerYChange = 3
+
+            if event.key == pygame.K_SPACE and gameOverB:
+                levelStart.play()
+                mixer.music.play(-1)
+                resetGame()
 
         if event.type == pygame.KEYUP:
-            if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                playerX_change = 0
-            if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
-                playerY_change = 0
+            if event.key == pygame.K_a or event.key == pygame.K_d:
+                playerXChange = 0
+            if event.key == pygame.K_w or event.key == pygame.K_s:
+                playerYChange = 0
 
     laserFire(playerX, laserY)
     # laserSound = mixer.Sound('./audio/laser.mp3')
     # laserSound.play()
 
     #Player Boundaries
-    playerX += playerX_change
-    playerY += playerY_change
+    playerX += playerXChange
+    playerY += playerYChange
 
     if playerX <= 0:
         playerX = 0
@@ -144,25 +195,32 @@ while running:
     for i in range (no_enemies):
 
         #Game Over
-        if enemyY[i] > 536:
+        shipDestruction = shipContact(enemyX[i], enemyY[i], playerX, playerY)
+
+        if enemyY[i] > 552 or shipDestruction:
             for j in range (no_enemies):
                 enemyY[j] = 1000
+            mixer.music.stop()
             gameOver()
             laserState = "ready"
             laserY = 1000
+
+            if gameOverSound:
+                levelOver.play()
+                gameOverSound = False
             break
 
-        enemyX[i] += enemyX_change
-        enemyY[i] += enemyY_change
+        enemyX[i] += enemyXChange
+        enemyY[i] += enemyYChange
 
         if enemyX[i] <= 0:
-            enemyX_change = 0.5
+            enemyXChange = 2
         elif enemyX[i] >= 736:
-            enemyX_change = -0.5
+            enemyXChange = -2
         if enemyY[i] <=0:
-            enemyY_change = 0.5
+            enemyYChange = 2
         # elif enemyY[i] >= 536:
-        #     enemyY_change = -0.5
+        #     enemyYChange = -2
 
         #Collision Logic
         collision = isCollision(enemyX[i], enemyY[i], laserX, laserY)
@@ -172,7 +230,12 @@ while running:
             enemyX[i] = random.randint(0, 736)
             enemyY[i] = random.randint(0, 100)
             enemiesKilled += 1
-            # print(score)
+
+            if enemiesKilled % 5 == 0:
+                no_enemies += 1
+                enemyImg.append(pygame.image.load('./images/enemy.png'))
+                enemyX.append(random.randint(0, 736))
+                enemyY.append(random.randint(0, 50))
 
         enemy(enemyX[i], enemyY[i], i)
 
@@ -184,7 +247,7 @@ while running:
     laserX = playerX
     if laserState == "fire":
         laserFire(laserX, laserY)
-        laserY -= laserY_change
+        laserY -= laserYChange
 
     #Player Display
     player(playerX, playerY)
