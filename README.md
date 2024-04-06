@@ -1,4 +1,5 @@
-**#Run the main.py file**
+**# Run the main.py file**
+**# Use WASD for movemrnt**
 
 # Galaga-Clone
 Welcome to Galaga 2.0, an exciting remake of the classic arcade shooter game! Prepare to embark on a thrilling journey through space filled with intense battles against swarms of alien enemies
@@ -13,6 +14,8 @@ Player Ship: You command a sleek, customizable spacecraft armed with lasers read
 Enemy Assault: Face off against relentless waves of alien adversaries. These foes come in various shapes and sizes, each with unique attack patterns and behaviors. Stay alert and adapt your strategies to overcome the evolving challenges.
 
 Laser Fire: Unleash devastating laser blasts upon your enemies to obliterate them from the cosmos. Your ship is equipped with rapid-fire capabilities, allowing you to unleash a barrage of projectiles to decimate your foes.
+
+Level Mechanic: Kill a few enemies and you'll find out there are way more enemies than you can think of.
 
 Score Tracking: Keep track of your performance with a dynamic scoring system. Earn points for every enemy destroyed and compete for the highest score on the leaderboard. Can you achieve galactic domination and become the ultimate space ace?
 
