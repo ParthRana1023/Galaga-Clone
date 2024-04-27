@@ -75,21 +75,10 @@ def laserFire(x, y):
     laserState = "fire"
     screen.blit(laserImg, (x, y))
 
-def isCollision(enemyX, enemyY, laserX, laserY):
-    enemyDestroyed = math.sqrt(math.pow((laserX - enemyX), 2) + math.pow((laserY - enemyY), 2))
-    
-    if  enemyDestroyed < 36:
-        return True
-    else:
-        return False
+def shipContact(enemyX, enemyY, X, Y):
+    shipDestroy = math.sqrt(math.pow((X - enemyX), 2) + math.pow((Y - enemyY), 2))
 
-def shipContact(enemyX, enemyY, playerX, playerY):
-    shipDestroy = math.sqrt(math.pow((playerX - enemyX), 2) + math.pow((playerY - enemyY), 2))
-
-    if shipDestroy <= 36:
-        return True
-    else:
-        return False
+    return shipDestroy <= 36;
 
 def scoreDisplay(x, y):
     score = font.render("Score:" +  str(enemiesKilled*100), True, (255, 255, 255))
@@ -120,8 +109,6 @@ def resetGame():
         enemyImg.append(pygame.image.load('./images/enemy.png'))
         enemyX.append(random.randint(0, 736))
         enemyY.append(random.randint(0, 100))
-
-
 
 #Level Start/End Sound
 levelStart = mixer.Sound('./audio/levelStart.mp3')
@@ -223,7 +210,7 @@ while running:
         #     enemyYChange = -2
 
         #Collision Logic
-        collision = isCollision(enemyX[i], enemyY[i], laserX, laserY)
+        collision = shipContact(enemyX[i], enemyY[i], laserX, laserY)
         if collision:
             enemyKilled = mixer.Sound('./audio/enemyKillSound.mp3')
             enemyKilled.play()
